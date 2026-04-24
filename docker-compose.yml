@@ -1,0 +1,75 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: breezely-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: breezely
+      POSTGRES_PASSWORD: breezely
+      POSTGRES_DB: breezely
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Solo red interna, no expuesto al host (evita conflicto con postgres local)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U breezely"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: breezely-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    # Solo red interna, no expuesto al host (evita conflicto con redis local)
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: breezely-backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://breezely:breezely@db:5432/breezely
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - DEBUG=${DEBUG:-false}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    # Puerto 8001 en host para evitar conflicto con FastAPI local
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  nginx:
+    image: nginx:alpine
+    container_name: breezely-nginx
+    restart: unless-stopped
+    # Puerto 8081 en host para evitar conflicto con Vite/Nginx local
+    ports:
+      - "8081:80"
+      - "8443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
