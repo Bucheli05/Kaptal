@@ -1,0 +1,46 @@
+{
+  "app": {
+    "name": "Breezely"
+  },
+  "nav": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar sesión",
+    "dashboard": "Panel"
+  },
+  "auth": {
+    "welcome": "Bienvenido a {{name}}",
+    "loginSubtitle": "Inicia sesión para gestionar tu portafolio",
+    "registerSubtitle": "Regístrate para empezar a gestionar tu portafolio",
+    "email": "Email",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "fullName": "Nombre completo",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "loginButton": "Iniciar Sesión",
+    "registerButton": "Registrarse",
+    "loggingIn": "Iniciando...",
+    "creatingAccount": "Creando cuenta...",
+    "or": "o",
+    "google": "Continuar con Google",
+    "apple": "Continuar con Apple",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "passwordMismatch": "Las contraseñas no coinciden"
+  },
+  "hero": {
+    "loginTitle": "Cultiva tu patrimonio,",
+    "loginSubtitle": "cosecha tu futuro",
+    "registerTitle": "Siembra hoy,",
+    "registerSubtitle": "prospera mañana",
+    "description": "Breezely te ayuda a monitorear y optimizar tu portafolio de inversión conectado directamente a Interactive Brokers."
+  },
+  "dashboard": {
+    "welcome": "¡Bienvenido a Breezely!",
+    "description": "Tu dashboard está listo. Próximamente podrás conectar tu cuenta de Interactive Brokers y ver tu portafolio en tiempo real."
+  },
+  "language": {
+    "es": "Español",
+    "en": "English"
+  }
+}
