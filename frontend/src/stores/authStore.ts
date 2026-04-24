@@ -24,19 +24,24 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null })
     try {
-      const { data } = await api.post('/auth/login', {
-        username: email,
-        password,
+      const params = new URLSearchParams()
+      params.append('username', email)
+      params.append('password', password)
+      const { data } = await api.post('/auth/login', params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })
       localStorage.setItem('access_token', data.access_token)
       localStorage.setItem('refresh_token', data.refresh_token)
       set({ isAuthenticated: true, isLoading: false })
       return true
     } catch (err: any) {
-      set({
-        error: err.response?.data?.detail || 'Error al iniciar sesión',
-        isLoading: false,
-      })
+      const detail = err.response?.data?.detail
+      const msg = Array.isArray(detail)
+        ? detail[0]?.msg
+        : typeof detail === 'string'
+        ? detail
+        : 'Error al iniciar sesión'
+      set({ error: msg, isLoading: false })
       return false
     }
   },
@@ -54,10 +59,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ isAuthenticated: true, isLoading: false })
       return true
     } catch (err: any) {
-      set({
-        error: err.response?.data?.detail || 'Error al registrarse',
-        isLoading: false,
-      })
+      const detail = err.response?.data?.detail
+      const msg = Array.isArray(detail)
+        ? detail[0]?.msg
+        : typeof detail === 'string'
+        ? detail
+        : 'Error al registrarse'
+      set({ error: msg, isLoading: false })
       return false
     }
   },
