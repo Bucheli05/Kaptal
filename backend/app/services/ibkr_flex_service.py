@@ -75,6 +75,20 @@ class IbkrFlexService:
         # Log a snippet of the XML to see actual structure
         logger.info("Flex XML snippet: %s", xml_text[:600])
 
+        # Extraer metadatos de FlexStatement
+        flex_statement = root.find(".//FlexStatement")
+        statement_period = None
+        from_date = None
+        to_date = None
+        if flex_statement is not None:
+            statement_period = self._get_attr(flex_statement, "period")
+            from_date = self._get_attr(flex_statement, "fromDate")
+            to_date = self._get_attr(flex_statement, "toDate")
+            logger.info(
+                "FlexStatement period=%s fromDate=%s toDate=%s",
+                statement_period, from_date, to_date,
+            )
+
         positions = []
         for pos in root.findall(".//OpenPosition"):
             # IBKR Flex XML uses ATTRIBUTES, not child elements
@@ -91,6 +105,10 @@ class IbkrFlexService:
                     "market_value": self._attr_to_decimal(pos, "positionValue"),
                     "unrealized_pnl": self._attr_to_decimal(pos, "fifoPnlUnrealized"),
                     "realized_pnl": self._attr_to_decimal(pos, "fifoPnlRealized"),
+                    "cost_basis_price": self._attr_to_decimal(pos, "costBasisPrice"),
+                    "fifo_pnl_unrealized": self._attr_to_decimal(
+                        pos, "fifoPnlUnrealized"
+                    ),
                 }
             )
 
@@ -123,6 +141,9 @@ class IbkrFlexService:
 
         return {
             "positions": positions,
+            "statement_period": statement_period,
+            "from_date": from_date,
+            "to_date": to_date,
             "summary": {
                 "net_liquidation": net_liquidation,
                 "cash": cash,

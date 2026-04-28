@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -63,6 +64,7 @@ interface PerformanceChartProps {
 }
 
 export default function PerformanceChart({ history = [] }: PerformanceChartProps) {
+  const { t } = useTranslation()
   const [range, setRange] = useState<TimeRange>('1Y')
 
   const hasHistory = history.length > 1
@@ -114,24 +116,24 @@ export default function PerformanceChart({ history = [] }: PerformanceChartProps
       datasets: [
         {
           data: values,
-          borderColor: '#1B4332',
+          borderColor: '#4ADE80',
           backgroundColor: (ctx: any) => {
             const chart = ctx.chart
             const { ctx: canvasCtx, chartArea } = chart
-            if (!chartArea) return 'rgba(27, 67, 50, 0.08)'
+            if (!chartArea) return 'rgba(74, 222, 128, 0.08)'
             const gradient = canvasCtx.createLinearGradient(
               0, chartArea.top,
               0, chartArea.bottom,
             )
-            gradient.addColorStop(0, 'rgba(27, 67, 50, 0.08)')
-            gradient.addColorStop(1, 'rgba(27, 67, 50, 0)')
+            gradient.addColorStop(0, 'rgba(74, 222, 128, 0.08)')
+            gradient.addColorStop(1, 'rgba(74, 222, 128, 0)')
             return gradient
           },
           fill: true,
           tension: 0.4,
           pointRadius: 0,
           pointHoverRadius: 4,
-          pointHoverBackgroundColor: '#1B4332',
+          pointHoverBackgroundColor: '#4ADE80',
           pointHoverBorderColor: '#fff',
           pointHoverBorderWidth: 2,
           borderWidth: 2,
@@ -198,7 +200,7 @@ export default function PerformanceChart({ history = [] }: PerformanceChartProps
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
         <div>
           <h3 className="text-xs font-semibold text-coffee-400 dark:text-dark-text-muted uppercase tracking-wider mb-1">
-            Rendimiento
+            {t('dashboard.performance')}
           </h3>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-coffee-900 dark:text-dark-text">

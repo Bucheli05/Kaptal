@@ -14,6 +14,9 @@ export interface Position {
   market_value: string | null
   unrealized_pnl: string | null
   realized_pnl: string | null
+  cost_basis_price: string | null
+  fifo_pnl_unrealized: string | null
+  daily_price_change_pct: string | null
 }
 
 export interface PortfolioSummary {

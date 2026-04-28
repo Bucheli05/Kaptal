@@ -1,6 +1,7 @@
 """Router de portafolio."""
 
-from datetime import UTC, datetime, timedelta, timezone
+import logging
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -19,6 +20,8 @@ from app.schemas.broker import (
     SyncResponse,
 )
 from app.services.ibkr_flex_service import IbkrFlexService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -56,24 +59,83 @@ async def sync_portfolio(
             detail=f"Failed to fetch data from IBKR: {str(e)}",
         )
 
+    # Extraer metadatos del FlexStatement
+    statement_period = report.get("statement_period")
+    from_date = report.get("from_date")
+    to_date = report.get("to_date")
+
+    logger.info("Flex statement: period=%s fromDate=%s toDate=%s",
+                statement_period, from_date, to_date)
+
+    # Verificar que el period sea LastBusinessDay
+    if statement_period != "LastBusinessDay":
+        logger.warning("Flex statement period is '%s', expected 'LastBusinessDay'",
+                      statement_period)
+
+    # Usar toDate del XML como fecha del snapshot (formato: YYYYMMDD)
+    snapshot_date = datetime.now(UTC)
+    if to_date:
+        try:
+            snapshot_date = datetime.strptime(to_date, "%Y%m%d").replace(tzinfo=UTC)
+            logger.info("Using toDate as snapshot date: %s", snapshot_date)
+        except ValueError:
+            logger.warning("Could not parse toDate: %s", to_date)
+
+    day_start = snapshot_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = day_start + timedelta(days=1)
+
+    # Obtener snapshot anterior para calcular daily_pnl
+    prev_snapshot = (
+        db.query(PortfolioSnapshot)
+        .filter(
+            PortfolioSnapshot.broker_connection_id == conn.id,
+            PortfolioSnapshot.snapshot_date < day_start,
+        )
+        .order_by(PortfolioSnapshot.snapshot_date.desc())
+        .first()
+    )
+
+    # Guardar posiciones anteriores para calcular variación diaria
+    prev_positions = {
+        p.symbol: p
+        for p in db.query(Position).filter(
+            Position.broker_connection_id == conn.id
+        ).all()
+    }
+
     # Borrar posiciones anteriores
     db.query(Position).filter(Position.broker_connection_id == conn.id).delete()
 
     positions_data = report.get("positions", [])
     for pos in positions_data:
+        symbol = pos.get("symbol") or "UNKNOWN"
+        market_price = pos.get("market_price")
+
+        # Calcular variación diaria del precio comparando con snapshot anterior
+        daily_price_change_pct = None
+        if symbol in prev_positions and market_price is not None:
+            prev_price = prev_positions[symbol].market_price
+            if prev_price is not None and prev_price > 0:
+                daily_price_change_pct = (
+                    (market_price - prev_price) / prev_price
+                ) * 100
+
         db_position = Position(
             broker_connection_id=conn.id,
-            symbol=pos.get("symbol") or "UNKNOWN",
+            symbol=symbol,
             description=pos.get("description"),
             asset_class=pos.get("asset_class"),
             sector=pos.get("sector"),
             currency=pos.get("currency"),
             quantity=pos.get("quantity") or Decimal("0"),
             avg_cost=pos.get("avg_cost"),
-            market_price=pos.get("market_price"),
+            market_price=market_price,
             market_value=pos.get("market_value"),
             unrealized_pnl=pos.get("unrealized_pnl"),
             realized_pnl=pos.get("realized_pnl"),
+            cost_basis_price=pos.get("cost_basis_price"),
+            fifo_pnl_unrealized=pos.get("fifo_pnl_unrealized"),
+            daily_price_change_pct=daily_price_change_pct,
         )
         db.add(db_position)
 
@@ -93,30 +155,12 @@ async def sync_portfolio(
     cash = summary.get("cash") or Decimal("0")
     net_liquidation = summary.get("net_liquidation") or total_value
 
-    # Limpiar snapshots duplicados del dia actual y crear uno nuevo
-    # Usar UTC-5 (hora local del usuario) para definir el inicio del dia
-    local_tz = timezone(timedelta(hours=-5))
-    now_local = datetime.now(local_tz)
-    today_start = now_local.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    ).astimezone(UTC)
-
-    # Borrar todos los snapshots de hoy (evita duplicados)
+    # Borrar snapshots del mismo dia para evitar duplicados
     db.query(PortfolioSnapshot).filter(
         PortfolioSnapshot.broker_connection_id == conn.id,
-        PortfolioSnapshot.snapshot_date >= today_start,
+        PortfolioSnapshot.snapshot_date >= day_start,
+        PortfolioSnapshot.snapshot_date < day_end,
     ).delete()
-
-    # Calcular daily_pnl comparando con el ultimo snapshot de un dia anterior
-    prev_snapshot = (
-        db.query(PortfolioSnapshot)
-        .filter(
-            PortfolioSnapshot.broker_connection_id == conn.id,
-            PortfolioSnapshot.snapshot_date < today_start,
-        )
-        .order_by(PortfolioSnapshot.snapshot_date.desc())
-        .first()
-    )
 
     daily_pnl: Decimal | None = None
     daily_pnl_pct: Decimal | None = None
@@ -132,7 +176,7 @@ async def sync_portfolio(
         cash_balance=cash,
         daily_pnl=daily_pnl,
         daily_pnl_pct=daily_pnl_pct,
-        snapshot_date=datetime.now(UTC),
+        snapshot_date=snapshot_date,
     )
     db.add(snapshot)
 

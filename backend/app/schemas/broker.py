@@ -70,6 +70,9 @@ class PositionResponse(BaseModel):
     market_value: Decimal | None = None
     unrealized_pnl: Decimal | None = None
     realized_pnl: Decimal | None = None
+    cost_basis_price: Decimal | None = None
+    fifo_pnl_unrealized: Decimal | None = None
+    daily_price_change_pct: Decimal | None = None
 
     class Config:
         from_attributes = True
@@ -89,6 +92,9 @@ class PositionCreate(BaseModel):
     market_value: Decimal | None = None
     unrealized_pnl: Decimal | None = None
     realized_pnl: Decimal | None = None
+    cost_basis_price: Decimal | None = None
+    fifo_pnl_unrealized: Decimal | None = None
+    daily_price_change_pct: Decimal | None = None
 
 
 # ============================================================================

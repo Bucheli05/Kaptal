@@ -49,6 +49,15 @@ class Position(Base):
     realized_pnl: Mapped[float | None] = mapped_column(
         Numeric(18, 6), nullable=True,
     )
+    cost_basis_price: Mapped[float | None] = mapped_column(
+        Numeric(18, 6), nullable=True,
+    )
+    fifo_pnl_unrealized: Mapped[float | None] = mapped_column(
+        Numeric(18, 6), nullable=True,
+    )
+    daily_price_change_pct: Mapped[float | None] = mapped_column(
+        Numeric(18, 6), nullable=True,
+    )
 
     # Relation
     broker_connection: Mapped[Any] = relationship(

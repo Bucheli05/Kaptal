@@ -193,47 +193,74 @@ export default function DashboardPage() {
               <thead>
                 <tr className="border-b border-coffee-100 dark:border-dark-border">
                   <th className="text-left text-xs font-medium text-coffee-400 dark:text-dark-text-muted py-3 pr-4">{t('dashboard.symbol')}</th>
-                  <th className="text-left text-xs font-medium text-coffee-400 dark:text-dark-text-muted py-3 pr-4">{t('dashboard.name')}</th>
                   <th className="text-right text-xs font-medium text-coffee-400 dark:text-dark-text-muted py-3 pr-4">{t('dashboard.qty')}</th>
                   <th className="text-right text-xs font-medium text-coffee-400 dark:text-dark-text-muted py-3 pr-4">{t('dashboard.price')}</th>
+                  <th className="text-right text-xs font-medium text-coffee-400 dark:text-dark-text-muted py-3 pr-4">{t('dashboard.dailyChange')}</th>
+                  <th className="text-right text-xs font-medium text-coffee-400 dark:text-dark-text-muted py-3 pr-4">{t('dashboard.costBasis')}</th>
+                  <th className="text-right text-xs font-medium text-coffee-400 dark:text-dark-text-muted py-3 pr-4">{t('dashboard.unrealizedPnL')}</th>
                   <th className="text-right text-xs font-medium text-coffee-400 dark:text-dark-text-muted py-3">{t('dashboard.value')}</th>
                 </tr>
               </thead>
               <tbody>
                 {positions.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-sm text-coffee-400 dark:text-dark-text-muted">
+                    <td colSpan={7} className="py-8 text-center text-sm text-coffee-400 dark:text-dark-text-muted">
                       {isConnected
                         ? t('dashboard.noPositions')
                         : t('dashboard.connectBrokerHint')}
                     </td>
                   </tr>
                 ) : (
-                  positions.map((pos, i) => (
-                    <tr key={pos.symbol} className={`${i < positions.length - 1 ? 'border-b border-coffee-50 dark:border-dark-border' : ''}`}>
-                      <td className="py-3.5 pr-4">
-                        <span className="text-sm font-semibold text-coffee-900 dark:text-dark-text">{pos.symbol}</span>
-                      </td>
-                      <td className="py-3.5 pr-4">
-                        <span className="text-sm text-coffee-500 dark:text-dark-text-secondary">{pos.description || '-'}</span>
-                      </td>
-                      <td className="py-3.5 pr-4 text-right">
-                        <span className="text-sm text-coffee-900 dark:text-dark-text">{parseFloat(pos.quantity).toLocaleString()}</span>
-                      </td>
-                      <td className="py-3.5 pr-4 text-right">
-                        <span className="text-sm text-coffee-900 dark:text-dark-text">
-                          {pos.market_price ? `$${parseFloat(pos.market_price).toFixed(2)}` : '-'}
-                        </span>
-                      </td>
-                      <td className="py-3.5 text-right">
-                        <span className="text-sm font-medium text-coffee-900 dark:text-dark-text">
-                          {pos.market_value
-                            ? `$${parseFloat(pos.market_value).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
-                            : '-'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
+                  positions.map((pos, i) => {
+                    const dailyChange = pos.daily_price_change_pct ? parseFloat(pos.daily_price_change_pct) : null
+                    const fifoPnl = pos.fifo_pnl_unrealized ? parseFloat(pos.fifo_pnl_unrealized) : null
+                    const costBasis = pos.cost_basis_price ? parseFloat(pos.cost_basis_price) : null
+                    return (
+                      <tr key={pos.symbol} className={`${i < positions.length - 1 ? 'border-b border-coffee-50 dark:border-dark-border' : ''}`}>
+                        <td className="py-3.5 pr-4">
+                          <span className="text-sm font-semibold text-coffee-900 dark:text-dark-text">{pos.symbol}</span>
+                        </td>
+                        <td className="py-3.5 pr-4 text-right">
+                          <span className="text-sm text-coffee-900 dark:text-dark-text">{parseFloat(pos.quantity).toLocaleString()}</span>
+                        </td>
+                        <td className="py-3.5 pr-4 text-right">
+                          <span className="text-sm text-coffee-900 dark:text-dark-text">
+                            {pos.market_price ? `$${parseFloat(pos.market_price).toFixed(2)}` : '-'}
+                          </span>
+                        </td>
+                        <td className="py-3.5 pr-4 text-right">
+                          {dailyChange !== null ? (
+                            <span className={`text-sm font-medium ${dailyChange >= 0 ? 'text-forest-700 dark:text-forest-400' : 'text-terracotta-600 dark:text-terracotta-400'}`}>
+                              {dailyChange >= 0 ? '+' : ''}{dailyChange.toFixed(2)}%
+                            </span>
+                          ) : (
+                            <span className="text-sm text-coffee-400 dark:text-dark-text-muted">-</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 pr-4 text-right">
+                          <span className="text-sm text-coffee-900 dark:text-dark-text">
+                            {costBasis ? `$${costBasis.toFixed(2)}` : '-'}
+                          </span>
+                        </td>
+                        <td className="py-3.5 pr-4 text-right">
+                          {fifoPnl !== null ? (
+                            <span className={`text-sm font-medium ${fifoPnl >= 0 ? 'text-forest-700 dark:text-forest-400' : 'text-terracotta-600 dark:text-terracotta-400'}`}>
+                              {fifoPnl >= 0 ? '+' : ''}${fifoPnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-coffee-400 dark:text-dark-text-muted">-</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 text-right">
+                          <span className="text-sm font-medium text-coffee-900 dark:text-dark-text">
+                            {pos.market_value
+                              ? `$${parseFloat(pos.market_value).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                              : '-'}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
             </table>
