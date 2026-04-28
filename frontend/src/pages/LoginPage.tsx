@@ -6,6 +6,7 @@ import { Leaf, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import OrganicBackground from '../components/OrganicBackground'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import ThemeToggle from '../components/ThemeToggle'
 import { useState } from 'react'
 
 const containerVariants = {
@@ -76,9 +77,10 @@ export default function LoginPage() {
       </div>
 
       {/* Right panel — Form */}
-      <div className="flex-1 flex flex-col justify-center items-center bg-white px-6 py-12 lg:px-16 relative">
+      <div className="flex-1 flex flex-col justify-center items-center bg-white dark:bg-dark-bg px-6 py-12 lg:px-16 relative">
         {/* Language switcher */}
-        <div className="absolute top-6 right-6">
+        <div className="absolute top-6 right-6 flex items-center gap-2">
+          <ThemeToggle />
           <LanguageSwitcher />
         </div>
 

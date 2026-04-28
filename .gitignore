@@ -1,4 +1,12 @@
+# Environment & Secrets
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+credentials.json
+service-account*.json
 
 # Python
 __pycache__/
@@ -25,6 +33,8 @@ wheels/
 .coverage
 htmlcov/
 .tox/
+.mypy_cache/
+.ruff_cache/
 
 # Node / React
 node_modules/
@@ -33,6 +43,11 @@ frontend/dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+
+# AI Agent Configs
+.agents/
+.claude/
 
 # IDEs
 .idea/
@@ -40,17 +55,48 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+*.sublime-*
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
 
 # Database
 *.db
 *.sqlite3
+*.sqlite
 
 # Python Virtual Environments
 venv/
 env/
 ENV/
 .venv/
+
+# Docker
+.docker/
+
+# Local overrides
+*.local
+config.local.*
+
+# Test artifacts
+test-results/
+playwright-report/
+
+# Coverage
+coverage/
+coverage.xml
+.lcov.info
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp

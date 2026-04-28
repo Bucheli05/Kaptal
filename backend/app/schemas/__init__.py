@@ -9,6 +9,15 @@ from app.schemas.auth import (
     RefreshToken,
 )
 from app.schemas.user import UserUpdate, UserInDB
+from app.schemas.broker import (
+    BrokerConnectionCreate,
+    BrokerConnectionResponse,
+    BrokerStatusResponse,
+    PositionResponse,
+    PortfolioSummaryResponse,
+    PortfolioSnapshotResponse,
+    SyncResponse,
+)
 
 __all__ = [
     "UserBase",
@@ -20,4 +29,11 @@ __all__ = [
     "RefreshToken",
     "UserUpdate",
     "UserInDB",
+    "BrokerConnectionCreate",
+    "BrokerConnectionResponse",
+    "BrokerStatusResponse",
+    "PositionResponse",
+    "PortfolioSummaryResponse",
+    "PortfolioSnapshotResponse",
+    "SyncResponse",
 ]

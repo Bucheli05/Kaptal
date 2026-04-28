@@ -15,10 +15,16 @@
 
   html {
     font-family: 'Satoshi', system-ui, sans-serif;
-    background-color: var(--color-cream);
+    background-color: #ffffff;
     color: var(--color-coffee-900);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html.dark {
+    background-color: #0D1117;
+    color: #E6EDF3;
   }
 
   body {
@@ -43,11 +49,15 @@
     background-color: rgba(27, 67, 50, 0.2);
     border-radius: 20px;
   }
+
+  html.dark ::-webkit-scrollbar-thumb {
+    background-color: rgba(27, 67, 50, 0.5);
+  }
 }
 
 @layer components {
   .input-organic {
-    @apply w-full px-5 py-3.5 bg-white border border-coffee-200 rounded-2xl 
+    @apply w-full px-5 py-3.5 bg-white border border-coffee-200 rounded-2xl
            text-coffee-900 placeholder-coffee-300 font-sans text-sm
            transition-all duration-300 ease-out
            focus:outline-none focus:border-terracotta-400 focus:ring-2 focus:ring-terracotta-500/10 focus:bg-white
@@ -56,9 +66,10 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  .input-organic:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(224, 122, 95, 0.15);
+  .dark .input-organic {
+    @apply bg-dark-surface border-dark-border text-dark-text placeholder-dark-text-muted
+           focus:border-terracotta-500 focus:ring-terracotta-500/20 focus:bg-dark-surface
+           hover:border-dark-border-light;
   }
 
   .btn-primary {
@@ -77,7 +88,16 @@
            hover:-translate-y-0.5 active:translate-y-0;
   }
 
+  .dark .btn-secondary {
+    @apply bg-dark-surface text-dark-text border-dark-border
+           hover:border-terracotta-500/40 hover:shadow-terracotta-500/10;
+  }
+
   .card-glass {
     @apply bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-xl shadow-coffee-900/5;
+  }
+
+  .dark .card-glass {
+    @apply bg-dark-surface/80 border-dark-border shadow-dark-bg/50;
   }
 }

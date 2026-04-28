@@ -34,14 +34,17 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # CORS — comma-separated string from .env parsed into list
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8080", "http://localhost:8081"]
+    CORS_ORIGINS: str = (
+        "http://localhost:3000,"
+        "http://localhost:8080,"
+        "http://localhost:8081,"
+        "http://localhost:5173"
+    )
 
-    @field_validator("CORS_ORIGINS", mode="before")
-    @classmethod
-    def _parse_cors(cls, v):
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        return v
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Parse CORS_ORIGINS string into list."""
+        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
     # OAuth Google
     GOOGLE_CLIENT_ID: str = ""
